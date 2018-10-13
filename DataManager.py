@@ -17,7 +17,13 @@ class DataManager:
             download=True,
             transform=transforms.ToTensor())
 
-        self.x_train = np.array([t.numpy()[0] for t, l in self.training_data])
-        self.x_test = np.array([t.numpy()[0] for t, l in self.testing_data])
-        self.y_train = np.array([l for t, l in self.training_data])
-        self.y_test = np.array([l for t, l in self.testing_data])
+        self.X_train = np.array([t.numpy() for t, l in self.training_data])
+        self.X_test = np.array([t.numpy() for t, l in self.testing_data])
+        self.Y_train = np.array([l for t, l in self.training_data])
+        self.Y_test = np.array([l for t, l in self.testing_data])
+
+    def loadTestingData(self):
+        return (self.X_test, self.Y_test)
+
+    def loadTrainingData(self):
+        return (self.X_train, self.Y_train)
