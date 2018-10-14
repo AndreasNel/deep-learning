@@ -1,7 +1,8 @@
 import numpy as np
 from keras.models import Sequential
-from keras.layers import LSTM
-from keras import backend as K
+from keras.layers import LSTM, Dense, BatchNormalization, Flatten
+from keras import regularizers
+from keras import utils
 from DataManager import DataManager
 
 print("Loading training data...")
@@ -13,34 +14,34 @@ print('Loaded shapes')
 for i in training_data, training_labels, testing_data, testing_labels:
     print(i.shape)
 
-num_classes, num_rows, num_cols = 964, 105, 105
-input_shape = (1, num_rows, num_cols) if K.image_data_format() == 'channels_first' else (num_rows, num_cols, 1)
+input_shape = tuple(training_data.shape[1:])
+num_classes = len(np.unique(training_labels))
 print("input_shape: {}".format(input_shape))
-training_data = training_data.reshape((training_data.shape[0],) + input_shape).astype('float32')
-testing_data = testing_data.reshape((testing_data.shape[0],) + input_shape).astype('float32')
+print("num_classes: {}".format(num_classes))
 
-print('Reshaped shapes')
-for i in training_data, training_labels, testing_data, testing_labels:
-    print(i.shape)
+# Convert to categorical classes
+training_labels = utils.to_categorical(training_labels, num_classes)
+testing_labels = utils.to_categorical(testing_labels, num_classes)
 
-
-raise Exception('asdfljkafdsljkh')
-
-# TODO build the model in a way corresponding to the correct data
 # Build the model
 print("Building Model...")
 model = Sequential()
-print("Adding layer 1")
-model.add(LSTM(20, input_shape=(105, 105), return_sequences=True, activation='relu'))
-# print("Adding layer 2")
-# model.add(LSTM(1, return_sequences=False, activation='softmax'))
+model.add(BatchNormalization(input_shape=input_shape))
+print("Adding layer 0")
+model.add(LSTM(105, activation='sigmoid', return_sequences=True))
+model.add(LSTM(105, activation='sigmoid', return_sequences=True))
+# model.add(LSTM(105, activation='sigmoid', return_sequences=True))
+# print("Adding hidden layer")
+# model.add(LSTM(105, activation='sigmoid', return_sequences=True))
+model.add(Flatten())
+print("Adding output layer")
+model.add(Dense(num_classes, activation='softmax'))
 print("Compiling the model")
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-print("Training the model")
-model.fit(training_data, training_labels, epochs=1000)
 model.summary()
+print("Training the model")
+history = model.fit(training_data, training_labels, batch_size=320, epochs=30, verbose=1)
 # Test the model with the testing data.
 print("Testing the model")
-predict = model.predict(training_data)
+score = model.evaluate(testing_data, testing_labels)
 
-# TODO run the stats
