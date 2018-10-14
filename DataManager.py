@@ -36,7 +36,7 @@ class DataManager:
         self.x_train, self.x_valid, self.y_train, self.y_valid = train_test_split(
             self.x_train,
             self.y_train,
-            test_size=test_size,
+            test_size=eval_size,
             random_state=random_state)
 
     def loadTestingData(self):
