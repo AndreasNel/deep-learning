@@ -18,21 +18,22 @@ class DataManager:
             download=True,
             transform=transforms.ToTensor())
 
-        self.background_data = np.array(
-            [t.numpy()[0] for t, _ in self.background])
-        self.evaulation_data = np.array(
-            [t.numpy()[0] for t, _ in self.evaluation])
+        self.background_data = np.array([t.numpy()[0] for t, _ in self.background])
+        self.evaluation_data = np.array([t.numpy()[0] for t, _ in self.evaluation])
 
         self.background_labels = np.array([l for _, l in self.background])
-        self.evaluation_labels = np.array(
-            [l for _, l in self.evaluation_labels])
+        # Due to labels in the evaluation data also starting from 0, they are offset in order
+        # to follow immediately after the background labels.
+        self.evaluation_labels = np.array([l for _, l in self.evaluation]) + np.max(self.background_labels) + 1
 
+        # Split the entire data set into a training and testing set.
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
             np.concatenate((self.background_data, self.evaluation_data)),
             np.concatenate((self.background_labels, self.evaluation_labels)),
             test_size=test_size,
             random_state=random_state)
 
+        # Split the training further into a final training set and a validation set.
         self.x_train, self.x_valid, self.y_train, self.y_valid = train_test_split(
             self.x_train,
             self.y_train,
