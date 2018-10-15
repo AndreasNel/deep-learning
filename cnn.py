@@ -91,6 +91,9 @@ plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
 plt.savefig("accuracy")
 
+plt.clf()   # Clear figure
+
+
 # Plot training & validation loss values
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
@@ -99,3 +102,9 @@ plt.ylabel('Loss')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
 plt.savefig("val_loss")
+
+train_score = model.evaluate(x_train, y_train, batch_size=batch_size)
+test_score = model.evaluate(x_test, y_test, batch_size=batch_size)
+
+print("Train score: ", train_score)
+print("Test score: ", test_score)
