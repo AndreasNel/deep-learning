@@ -2,7 +2,8 @@ from torchvision.datasets import Omniglot
 import torchvision.transforms as transforms
 import numpy as np
 from sklearn.model_selection import train_test_split
-
+from keras import utils
+from keras import backend as K
 
 class DataManager:
     def __init__(self, test_size=0.2, eval_size=0.2, random_state=0):
@@ -17,6 +18,8 @@ class DataManager:
             background=False,
             download=True,
             transform=transforms.ToTensor())
+
+        self.num_classes, self.img_rows, self.img_cols = 1623, 105, 105
 
         self.background_data = np.array([t.numpy()[0] for t, _ in self.background])
         self.evaluation_data = np.array([t.numpy()[0] for t, _ in self.evaluation])
@@ -40,11 +43,30 @@ class DataManager:
             test_size=eval_size,
             random_state=random_state)
 
-    def loadTestingData(self):
+        self.y_test = utils.to_categorical(self.y_test, self.num_classes)
+        self.y_train = utils.to_categorical(self.y_train, self.num_classes)
+        self.y_valid = utils.to_categorical(self.y_valid, self.num_classes)
+
+        if K.image_data_format() == 'channels_first':
+            self.x_train = self.x_train.reshape(self.x_train.shape[0], 1, self.img_rows, self.img_cols)
+            self.x_test = self.x_test.reshape(self.x_test.shape[0], 1, self.img_rows, self.img_cols)
+            self.x_valid = self.x_valid.reshape(self.x_valid.shape[0], 1, self.img_rows, self.img_cols)
+            self.input_shape = (1, self.img_rows, self.img_cols)
+        else:
+            self.x_train = self.x_train.reshape(self.x_train.shape[0], self.img_rows, self.img_cols, 1)
+            self.x_test = self.x_test.reshape(self.x_test.shape[0], self.img_rows, self.img_cols, 1)
+            self.x_valid = self.x_valid.reshape(self.x_valid.shape[0], self.img_rows, self.img_cols, 1)
+            self.input_shape = (self.img_rows, self.img_cols, 1)
+
+        self.x_train = self.x_train.astype('float32')
+        self.x_test = self.x_test.astype('float32')
+        self.x_valid = self.x_valid.astype('float32')
+
+    def load_testing_data(self):
         return self.x_test, self.y_test
 
-    def loadTrainingData(self):
+    def load_training_data(self):
         return self.x_train, self.y_train
 
-    def loadValidationData(self):
+    def load_validation_data(self):
         return self.x_valid, self.y_valid
